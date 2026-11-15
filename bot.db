@@ -1,0 +1,136 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY,
+    username TEXT,
+    language TEXT DEFAULT 'ru',
+    balance INTEGER DEFAULT 1,
+    ref_code TEXT UNIQUE,
+    referred_by INTEGER,
+    is_banned INTEGER DEFAULT 0,
+    is_verified INTEGER DEFAULT 0,
+    device_id TEXT,
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    creator_id INTEGER,
+    username TEXT,
+    theme TEXT,
+    count INTEGER,
+    review_type TEXT,
+    example_text TEXT,
+    status TEXT DEFAULT 'active',
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS task_completions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER,
+    user_id INTEGER,
+    review_text TEXT,
+    created_at TEXT,
+    FOREIGN KEY (task_id) REFERENCES tasks(id)
+);
+
+CREATE TABLE IF NOT EXISTS creator_limits (
+    user_id INTEGER NOT NULL,
+    creator_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, creator_id)
+);
+
+CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    referrer_id INTEGER,
+    referred_id INTEGER,
+    bonus_get INTEGER DEFAULT 1,
+    created_at TEXT
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_referrals_referred_id
+ON referrals(referred_id);
+
+CREATE TABLE IF NOT EXISTS payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    stars_amount INTEGER,
+    get_amount INTEGER,
+    payment_id TEXT UNIQUE,
+    status TEXT DEFAULT 'completed',
+    created_at TEXT,
+    referral_bonus INTEGER DEFAULT 0,
+    referrer_id INTEGER
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_payment_id
+ON payments(payment_id);
+
+CREATE TABLE IF NOT EXISTS deposit_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    request_id TEXT UNIQUE,
+    stars_amount INTEGER,
+    get_amount INTEGER,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS withdraw_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    username TEXT,
+    get_amount INTEGER,
+    stars_amount INTEGER,
+    gift_name TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS contests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    description TEXT,
+    bonus_get INTEGER,
+    start_date TEXT,
+    end_date TEXT,
+    is_active INTEGER DEFAULT 1,
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS contest_participants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contest_id INTEGER,
+    user_id INTEGER,
+    completed_tasks INTEGER DEFAULT 0,
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS promo_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE,
+    bonus_get INTEGER,
+    uses_limit INTEGER,
+    used_count INTEGER DEFAULT 0,
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS promo_uses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    promo_id INTEGER,
+    user_id INTEGER,
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS user_channels (
+    user_id INTEGER PRIMARY KEY,
+    channel_id TEXT NOT NULL,
+    channel_title TEXT,
+    connected_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
